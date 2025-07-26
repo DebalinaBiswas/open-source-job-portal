@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post a Job - Open Source Job Portal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f4f8;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #007bff;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      background: #007bff;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 480px) {
+      form {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Post a New Job</h1>
+
+  <form id="jobForm">
+    <label for="title">Job Title</label>
+    <input type="text" id="title" required>
+
+    <label for="company">Company Name</label>
+    <input type="text" id="company" required>
+
+    <label for="location">Location</label>
+    <input type="text" id="location" required>
+
+    <label for="salary">Salary</label>
+    <input type="text" id="salary" required>
+
+    <label for="description">Job Description</label>
+    <textarea id="description" rows="4" required></textarea>
+
+    <label for="posted_by">Your Email (Auto-filled)</label>
+    <input type="email" id="posted_by" readonly>
+
+    <button type="submit">Post Job</button>
+
+    <div class="message" id="message"></div>
+  </form>
+
+  <script>
+    // Auto-fill employer email
+    const postedByInput = document.getElementById("posted_by");
+    const userEmail = localStorage.getItem("userEmail");
+    if (userEmail) {
+      postedByInput.value = userEmail;
+    } else {
+      alert("Please log in to post a job.");
+      window.location.href = "login.html";
+    }
+
+    // Form submission
+    document.getElementById("jobForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const data = {
+        title: document.getElementById("title").value,
+        company: document.getElementById("company").value,
+        location: document.getElementById("location").value,
+        salary: document.getElementById("salary").value,
+        description: document.getElementById("description").value,
+        posted_by: postedByInput.value
+      };
+
+      fetch("http://localhost:5000/post-job", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(result => {
+        const msg = document.getElementById("message");
+        if (result.message) {
+          msg.textContent = "✅ Job posted successfully!";
+          msg.style.color = "green";
+          document.getElementById("jobForm").reset();
+          postedByInput.value = userEmail; // Reset but keep email
+        } else {
+          msg.textContent = "❌ Failed to post job.";
+          msg.style.color = "red";
+        }
+      })
+      .catch(() => {
+        const msg = document.getElementById("message");
+        msg.textContent = "❌ Error connecting to server.";
+        msg.style.color = "red";
+      });
+    });
+  </script>
+</body>
+</html>

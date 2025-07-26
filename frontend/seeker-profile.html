@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Seeker Profile - Open Source Job Portal</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #007bff;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Job Seeker Profile</h2>
+    <form id="profileForm">
+      <label for="contact">Contact</label>
+      <input type="text" id="contact" required />
+
+      <label for="skills">Skills</label>
+      <input type="text" id="skills" placeholder="e.g., JavaScript, HTML, MySQL" required />
+
+      <label for="work_history">Work History</label>
+      <textarea id="work_history" placeholder="Briefly describe your work experience"></textarea>
+
+      <button type="submit">Save Profile</button>
+      <div class="message" id="message"></div>
+    </form>
+  </div>
+
+  <script>
+    // Set your actual seeker ID here, or pull it dynamically after login
+    const seekerId = 2; // Replace with dynamic ID if available
+
+    document.getElementById('profileForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const data = {
+        user_id: seekerId,
+        contact: document.getElementById('contact').value,
+        skills: document.getElementById('skills').value,
+        work_history: document.getElementById('work_history').value
+      };
+
+      fetch('http://localhost:5000/update-seeker-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+        .then(async res => {
+          const result = await res.json();
+          const msg = document.getElementById('message');
+          if (res.status === 200) {
+            msg.textContent = '✅ Profile updated successfully!';
+            msg.style.color = 'green';
+          } else {
+            msg.textContent = '❌ ' + result.message;
+            msg.style.color = 'red';
+          }
+        })
+        .catch(() => {
+          const msg = document.getElementById('message');
+          msg.textContent = '❌ Error connecting to server.';
+          msg.style.color = 'red';
+        });
+    });
+  </script>
+
+</body>
+</html>

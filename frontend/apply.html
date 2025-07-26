@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Apply for Job - Open Source Job Portal</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #007bff;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      background: #007bff;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Apply for a Job</h1>
+
+  <form id="applyForm">
+    <label for="job_id">Job ID (Get it from Job Listing)</label>
+    <input type="number" id="job_id" required>
+
+    <label for="name">Your Name</label>
+    <input type="text" id="name" required>
+
+    <label for="email">Your Email</label>
+    <input type="email" id="email" required>
+
+    <label for="resume">Resume Link (Google Drive, etc.)</label>
+    <input type="url" id="resume" required>
+
+    <button type="submit">Submit Application</button>
+
+    <div class="message" id="message"></div>
+  </form>
+
+  <script>
+    document.getElementById("applyForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const data = {
+        job_id: document.getElementById("job_id").value,
+        applicant_name: document.getElementById("name").value,
+        applicant_email: document.getElementById("email").value,
+        resume_link: document.getElementById("resume").value
+      };
+
+      fetch("http://localhost:5000/apply-job", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(result => {
+        const msg = document.getElementById("message");
+        if (result.message) {
+          msg.textContent = "✅ Application submitted successfully!";
+          msg.style.color = "green";
+          document.getElementById("applyForm").reset();
+        } else {
+          msg.textContent = "❌ Failed to submit application.";
+          msg.style.color = "red";
+        }
+      })
+      .catch(() => {
+        const msg = document.getElementById("message");
+        msg.textContent = "❌ Error connecting to server.";
+        msg.style.color = "red";
+      });
+    });
+  </script>
+
+</body>
+</html>

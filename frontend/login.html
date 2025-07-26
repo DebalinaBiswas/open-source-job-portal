@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Open Source Job Portal</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-box {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #007bff;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      background: #007bff;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 480px) {
+      .login-box {
+        padding: 20px;
+        border-radius: 8px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <label for="email">Email</label>
+      <input type="email" id="email" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" required />
+
+      <button type="submit">Login</button>
+      <div class="message" id="message"></div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      })
+      .then(async res => {
+        const result = await res.json();
+        const msg = document.getElementById("message");
+
+        if (res.status === 200) {
+          msg.textContent = "✅ Login successful!";
+          msg.style.color = "green";
+
+          // Store user info in localStorage
+          localStorage.setItem("userEmail", result.user.email);
+          localStorage.setItem("userId", result.user.id);
+          localStorage.setItem("userRole", result.user.role);
+
+          // Redirect based on user role
+          if (result.user.role === "seeker") {
+            window.location.href = "seeker-dashboard.html";
+          } else if (result.user.role === "employer") {
+            window.location.href = "employer-dashboard.html";
+          }
+        } else {
+          msg.textContent = "❌ " + result.message;
+          msg.style.color = "red";
+        }
+      })
+      .catch(() => {
+        const msg = document.getElementById("message");
+        msg.textContent = "❌ Error connecting to server.";
+        msg.style.color = "red";
+      });
+    });
+  </script>
+</body>
+</html>

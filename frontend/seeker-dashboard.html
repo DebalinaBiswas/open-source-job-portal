@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Seeker Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #007bff;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .dashboard {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      padding: 30px 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .section {
+      flex: 1;
+      min-width: 300px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .application-card {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      background-color: #f4f4f4;
+    }
+
+    .application-card h4 {
+      color: #007bff;
+      margin-bottom: 6px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 12px;
+      width: 100%;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      font-weight: bold;
+      font-size: 15px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard {
+        flex-direction: column;
+        padding: 20px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome to Your Dashboard</h1>
+  </header>
+
+  <div class="dashboard">
+    <!-- Applications Section -->
+    <div class="section">
+      <h2>📄 My Applications</h2>
+      <div id="application-list">Loading applications...</div>
+    </div>
+
+    <!-- Profile Update Section -->
+    <div class="section">
+      <h2>👤 My Profile</h2>
+      <form id="profileForm">
+        <div class="form-group">
+          <label for="contact">Contact</label>
+          <input type="text" id="contact" required />
+        </div>
+
+        <div class="form-group">
+          <label for="skills">Skills</label>
+          <input type="text" id="skills" required />
+        </div>
+
+        <div class="form-group">
+          <label for="work_history">Work History</label>
+          <textarea id="work_history" rows="4" required></textarea>
+        </div>
+
+        <button type="submit">Update Profile</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const seekerEmail = localStorage.getItem("userEmail");
+    const seekerId = localStorage.getItem("userId");
+
+    if (!seekerEmail || !seekerId) {
+      alert("Please log in to continue.");
+      window.location.href = "login.html";
+    }
+
+    // Load applications
+    fetch(`http://localhost:5000/seeker-applications?email=${encodeURIComponent(seekerEmail)}`)
+      .then(res => res.json())
+      .then(applications => {
+        const appList = document.getElementById("application-list");
+        appList.innerHTML = "";
+
+        if (applications.length === 0) {
+          appList.innerHTML = "<p>No applications found.</p>";
+          return;
+        }
+
+        applications.forEach(app => {
+          const card = document.createElement("div");
+          card.className = "application-card";
+          card.innerHTML = `
+            <h4>${app.job_title}</h4>
+            <p><strong>Company:</strong> ${app.company}</p>
+            <p><strong>Applied At:</strong> ${new Date(app.applied_at).toLocaleString()}</p>
+          `;
+          appList.appendChild(card);
+        });
+      })
+      .catch(() => {
+        document.getElementById("application-list").innerHTML = "<p>Error loading applications.</p>";
+      });
+
+    // Profile form submit
+    document.getElementById("profileForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const data = {
+        user_id: seekerId,
+        contact: document.getElementById("contact").value,
+        skills: document.getElementById("skills").value,
+        work_history: document.getElementById("work_history").value,
+      };
+
+      fetch("http://localhost:5000/update-seeker-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(result => {
+          alert(result.message);
+        })
+        .catch(() => {
+          alert("Error updating profile.");
+        });
+    });
+  </script>
+</body>
+</html>
